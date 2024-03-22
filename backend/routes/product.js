@@ -1,30 +1,13 @@
-import express from 'express'
-import { Product, Bid, User } from '../orm/index.js'
-import authMiddleware from '../middlewares/auth.js'
-import { getDetails } from '../validators/index.js'
+import express from 'express';
+import authMiddleware from '../middlewares/auth.js';
+import { getAllProducts, getProductById, createProduct, updateProduct, deleteProduct } from '../controllers/productController.js';
 
-const router = express.Router()
+const router = express.Router();
 
-router.get('/api/products', async (req, res, next) => {
-  res.status(600).send()
-})
+router.get('/api/products', getAllProducts);
+router.get('/api/products/:productId', getProductById);
+router.post('/api/products', authMiddleware, createProduct);
+router.put('/api/products/:productId', authMiddleware, updateProduct);
+router.delete('/api/products/:productId', authMiddleware, deleteProduct);
 
-router.get('/api/products/:productId', async (req, res) => {
-  res.status(600).send()
-})
-
-// You can use the authMiddleware with req.user.id to authenticate your endpoint ;)
-
-router.post('/api/products', (req, res) => {
-  res.status(600).send()
-})
-
-router.put('/api/products/:productId', async (req, res) => {
-  res.status(600).send()
-})
-
-router.delete('/api/products/:productId', async (req, res) => {
-  res.status(600).send()
-})
-
-export default router
+export default router;
