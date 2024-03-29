@@ -1,14 +1,31 @@
-// controllers/productsController.js
-import { Product } from '../orm/index.js';
+import { Product, User } from '../orm/index.js';
 
 const getAllProducts = async (req, res) => {
   try {
-    const products = await Product.findAll();
-    res.status(200).json(products);
+    let products = await Product.findAll();
+
+    const productsWithSellerName = await Promise.all(products.map(async (product) => {
+      try {
+        const seller = await User.findByPk(product.sellerId, {
+          attributes: ['username']
+        });
+        if (!seller) {
+          throw new Error(`Seller with ID ${product.sellerId} not found`);
+        }
+        return { ...product.get({ plain: true }), sellerName: seller.username };
+      } catch (error) {
+        console.error('Error fetching seller for product:', product.id, error);
+        throw error;
+      }
+    }));
+
+    res.status(200).json(productsWithSellerName);
   } catch (error) {
+    console.error('Failed to get all products with seller names:', error);
     res.status(500).send('Internal Server Error');
   }
 };
+
 
 const getProductById = async (req, res) => {
   try {
@@ -86,7 +103,7 @@ const createProduct = async (req, res) => {
       }
   
       await product.destroy();
-      res.status(204).send(); // No Content
+      res.status(204).send();
     } catch (error) {
       console.error('Failed to delete product:', error);
       res.status(500).send('Internal Server Error');
