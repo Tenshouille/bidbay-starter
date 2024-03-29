@@ -35,6 +35,11 @@ async function fetchProducts() {
   }
 }
 
+const formatDate = (dateString) => {
+  const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+  return new Intl.DateTimeFormat('fr-FR', options).format(new Date(dateString));
+};
+
 onMounted(fetchProducts);
 </script>
 
@@ -75,9 +80,9 @@ onMounted(fetchProducts);
               </RouterLink>
             </p>
             <p class="card-text">
-              En cours jusqu'au {{ product.endDate }}
+            En cours jusqu'au {{ formatDate(product.endDate) }}
             </p>
-            <p class="card-text">Prix actuel : {{ product.price }} €</p>
+            <p class="card-text">Prix actuel : {{ product.originalPrice }} €</p>
           </div>
         </div>
       </div>
