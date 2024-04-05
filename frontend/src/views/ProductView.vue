@@ -1,102 +1,99 @@
 <script setup>
-import { ref, computed } from "vue";
-import { useRoute, useRouter, RouterLink } from "vue-router";
+import { ref, onMounted } from 'vue';
+import { useRoute, useRouter, RouterLink } from 'vue-router';
 import { useAuthStore } from "../store/auth";
-
-const { isAuthenticated, isAdmin, userData, token } = useAuthStore();
 
 const route = useRoute();
 const router = useRouter();
+const { token } = useAuthStore();
 
 const productId = ref(route.params.productId);
+const product = ref(null);
+const loading = ref(false);
+const error = ref(null);
 
-/**
- * @param {number|string|Date|VarDate} date
- */
 function formatDate(date) {
-  const options = { year: "numeric", month: "long", day: "numeric" };
-  return new Date(date).toLocaleDateString("fr-FR", options);
+  return new Intl.DateTimeFormat('fr-FR', {
+    year: 'numeric', month: 'long', day: 'numeric',
+    hour: 'numeric', minute: 'numeric', second: 'numeric',
+    hour12: false,
+  }).format(new Date(date));
 }
+
+onMounted(async () => {
+  loading.value = true;
+  try {
+    const response = await fetch(`http://localhost:3000/api/products/${productId.value}`, {
+      headers: token.value ? { 'Authorization': `Bearer ${token.value}` } : {},
+    });
+
+    if (!response.ok) {
+      try {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to fetch product details');
+      } catch (jsonParseError) {
+        throw new Error(`Request failed with status ${response.status}`);
+      }
+    }
+
+    const contentType = response.headers.get('Content-Type');
+    if (!contentType || !contentType.includes('application/json')) {
+      throw new Error('Response is not JSON');
+    }
+
+    product.value = await response.json();
+  } catch (err) {
+    error.value = err.message;
+    console.error(err);
+  } finally {
+    loading.value = false;
+  }
+});
+
 </script>
 
+
 <template>
-  <div class="row">
-    <div class="text-center mt-4" data-test-loading>
+  <div class="container mt-4">
+    <div v-if="loading" class="text-center">
       <div class="spinner-border" role="status">
         <span class="visually-hidden">Chargement...</span>
       </div>
     </div>
 
-    <div class="alert alert-danger mt-4" role="alert" data-test-error>
-      Une erreur est survenue lors du chargement des produits.
+    <div v-if="error" class="alert alert-danger" role="alert">
+      {{ error }}
     </div>
-    <div class="row" data-test-product>
-      <!-- Colonne de gauche : image et compte à rebours -->
+
+    <div v-if="product" class="row">
       <div class="col-lg-4">
-        <img
-          src="https://picsum.photos/id/250/512/512"
-          alt=""
-          class="img-fluid rounded mb-3"
-          data-test-product-picture
-        />
+        <img :src="product.pictureUrl" alt="Image du produit" class="img-fluid rounded mb-3"/>
         <div class="card">
-          <div class="card-header">
-            <h5 class="card-title">Compte à rebours</h5>
-          </div>
+          <div class="card-header">Fin de l'enchère</div>
           <div class="card-body">
-            <h6 class="card-subtitle mb-2 text-muted" data-test-countdown>
-              Temps restant : {{ countdown }}
-            </h6>
+            <p class="card-text">{{ formatDate(product.endDate) }}</p>
           </div>
         </div>
       </div>
 
-      <!-- Colonne de droite : informations du produit et formulaire d'enchère -->
       <div class="col-lg-8">
-        <div class="row">
-          <div class="col-lg-6">
-            <h1 class="mb-3" data-test-product-name>
-              Appareil photo argentique
-            </h1>
-          </div>
-          <div class="col-lg-6 text-end">
-            <RouterLink
-              :to="{ name: 'ProductEdition', params: { productId: productId } }"
-              class="btn btn-primary"
-              data-test-edit-product
-            >
-              Editer
-            </RouterLink>
-            &nbsp;
-            <button class="btn btn-danger" data-test-delete-product>
-              Supprimer
-            </button>
-          </div>
-        </div>
+        <h1 class="mb-3">{{ product.name }}</h1>
+        <RouterLink :to="{ name: 'ProductEdition', params: { productId: product.id } }" class="btn btn-primary me-2">Editer</RouterLink>
+        <button class="btn btn-danger">Supprimer</button>
 
-        <h2 class="mb-3">Description</h2>
-        <p data-test-product-description>
-          Appareil photo argentique classique, parfait pour les amateurs de
-          photographie
-        </p>
+        <h2 class="mt-4">Description</h2>
+        <p>{{ product.description }}</p>
 
-        <h2 class="mb-3">Informations sur l'enchère</h2>
+        <h2 class="mt-4">Informations sur l'enchère</h2>
         <ul>
-          <li data-test-product-price>Prix de départ : 17 €</li>
-          <li data-test-product-end-date>Date de fin : 20 juin 2026</li>
-          <li>
-            Vendeur :
-            <router-link
-              :to="{ name: 'User', params: { userId: 'TODO' } }"
-              data-test-product-seller
-            >
-              alice
-            </router-link>
-          </li>
+          <li>Prix de départ : {{ product.originalPrice }} €</li>
+          <li>Date de fin : {{ formatDate(product.endDate) }}</li>
+          <li>Vendeur : <RouterLink :to="{ name: 'User', params: { userId: product.sellerId } }">{{ product.sellerName }}</RouterLink></li>
         </ul>
 
-        <h2 class="mb-3">Offres sur le produit</h2>
-        <table class="table table-striped" data-test-bids>
+         <!-- Section d'enchères -->
+         <h2 class="mt-4">Offres sur le produit</h2>
+        <table class="table table-striped">
           <thead>
             <tr>
               <th scope="col">Enchérisseur</th>
@@ -106,49 +103,21 @@ function formatDate(date) {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="i in 10" :key="i" data-test-bid>
+            <tr v-if="product.bids.length === 0">
+              <td colspan="4">Aucune offre pour le moment</td>
+            </tr>
+            <tr v-for="bid in product.bids" :key="bid.id">
+              <td>{{ bid.bidder.username }}</td>
+              <td>{{ bid.price }} €</td>
+              <td>{{ formatDate(bid.date) }}</td>
               <td>
-                <router-link
-                  :to="{ name: 'User', params: { userId: 'TODO' } }"
-                  data-test-bid-bidder
-                >
-                  charly
-                </router-link>
-              </td>
-              <td data-test-bid-price>43 €</td>
-              <td data-test-bid-date>22 mars 2026</td>
-              <td>
-                <button class="btn btn-danger btn-sm" data-test-delete-bid>
-                  Supprimer
-                </button>
+                <button class="btn btn-danger btn-sm">Supprimer</button>
               </td>
             </tr>
           </tbody>
         </table>
-        <p data-test-no-bids>Aucune offre pour le moment</p>
 
-        <form data-test-bid-form>
-          <div class="form-group">
-            <label for="bidAmount">Votre offre :</label>
-            <input
-              type="number"
-              class="form-control"
-              id="bidAmount"
-              data-test-bid-form-price
-            />
-            <small class="form-text text-muted">
-              Le montant doit être supérieur à 10 €.
-            </small>
-          </div>
-          <button
-            type="submit"
-            class="btn btn-primary"
-            disabled
-            data-test-submit-bid
-          >
-            Enchérir
-          </button>
-        </form>
+        <!-- La partie enchères et offres serait mise à jour de manière similaire, en récupérant les données depuis l'API -->
       </div>
     </div>
   </div>
