@@ -27,19 +27,19 @@ const getAllProducts = async (req, res) => {
 };
 
 
-const getProductById = async (req, res) => {
-  try {
-    const { productId } = req.params;
-    const product = await Product.findByPk(productId);
-    if (product) {
-      res.status(200).json(product);
-    } else {
-      res.status(404).send('Product not found');
+  const getProductById = async (req, res) => {
+    try {
+      const { productId } = req.params;
+      const product = await Product.findByPk(productId);
+      if (product) {
+        res.status(200).json(product);
+      } else {
+        res.status(404).send('Product not found');
+      }
+    } catch (error) {
+      res.status(500).send('Internal Server Error');
     }
-  } catch (error) {
-    res.status(500).send('Internal Server Error');
-  }
-};
+  };
 
 
 const createProduct = async (req, res) => {

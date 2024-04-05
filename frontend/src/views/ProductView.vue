@@ -104,7 +104,7 @@ onMounted(async () => {
               </td>
             </tr>
           </tbody>
-        -->
+          -->
         </table>
 
         <!-- La partie enchères et offres serait mise à jour de manière similaire, en récupérant les données depuis l'API -->
