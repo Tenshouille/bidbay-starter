@@ -1,4 +1,4 @@
-import { Product, User } from '../orm/index.js';
+import { Product, User, Bid } from '../orm/index.js';
 
 const getAllProducts = async (req, res) => {
   try {
@@ -30,7 +30,18 @@ const getAllProducts = async (req, res) => {
 const getProductById = async (req, res) => {
   try {
     const { productId } = req.params;
-    const product = await Product.findByPk(productId);
+    //const product = await Product.findByPk(productId);
+    const product = await Product.findByPk(productId, {
+      include: [{
+        model: Bid,
+        as: 'bids',
+        include: [{
+          model: User,
+          as: 'bidder',
+          attributes: ['username'],
+        }],
+      }],
+    });
     if (product) {
       res.status(200).json(product);
     } else {
