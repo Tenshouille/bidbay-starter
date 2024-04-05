@@ -81,7 +81,7 @@ onMounted(async () => {
 
          <!-- Section d'enchères -->
          <h2 class="mt-4">Offres sur le produit</h2>
-        <table class="table table-striped">
+         <table class="table table-striped">
           <thead>
             <tr>
               <th scope="col">Enchérisseur</th>
@@ -90,21 +90,19 @@ onMounted(async () => {
               <th scope="col"></th>
             </tr>
           </thead>
-          <!--
           <tbody>
             <tr v-if="product.bids.length === 0">
               <td colspan="4">Aucune offre pour le moment</td>
             </tr>
             <tr v-for="bid in product.bids" :key="bid.id">
-              <td>{{ bid.bidder }}</td>
-              <td>{{ bid.amount }} €</td>
+              <td>{{ bid.bidder.username }}</td>
+              <td>{{ bid.price }} €</td>
               <td>{{ formatDate(bid.date) }}</td>
               <td>
                 <button class="btn btn-danger btn-sm">Supprimer</button>
               </td>
             </tr>
           </tbody>
-          -->
         </table>
 
         <!-- La partie enchères et offres serait mise à jour de manière similaire, en récupérant les données depuis l'API -->
