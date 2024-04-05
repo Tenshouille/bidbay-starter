@@ -61,7 +61,7 @@ function formatDate(date) {
           </div>
           <div class="col-lg-6 text-end">
             <RouterLink
-              :to="{ name: 'ProductEdition', params: { productId: 'TODO' } }"
+              :to="{ name: 'ProductEdition', params: { productId: productId  } }"
               class="btn btn-primary"
               data-test-edit-product
             >
