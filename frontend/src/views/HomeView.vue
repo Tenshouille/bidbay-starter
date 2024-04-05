@@ -46,6 +46,7 @@ onMounted(fetchProducts);
 
 <template>
   <div>
+    <!-- Votre code existant pour afficher la liste des produits -->
     <h1 class="text-center mb-4">Liste des produits</h1>
 
     <div v-if="loading" class="text-center mt-4">
@@ -61,6 +62,7 @@ onMounted(fetchProducts);
     <div class="row">
       <div class="col-md-4 mb-4" v-for="product in products" :key="product.id">
         <div class="card">
+          <!-- Utilisation de RouterLink pour diriger l'utilisateur vers la page des détails du produit -->
           <RouterLink :to="{ name: 'Product', params: { productId: product.id } }">
             <img :src="product.pictureUrl" class="card-img-top" />
           </RouterLink>
@@ -80,7 +82,7 @@ onMounted(fetchProducts);
               </RouterLink>
             </p>
             <p class="card-text">
-            En cours jusqu'au {{ formatDate(product.endDate) }}
+              En cours jusqu'au {{ formatDate(product.endDate) }}
             </p>
             <p class="card-text">Prix actuel : {{ product.originalPrice }} €</p>
           </div>
@@ -89,3 +91,4 @@ onMounted(fetchProducts);
     </div>
   </div>
 </template>
+

@@ -12,6 +12,45 @@ if (!isAuthenticated.value) {
 }
 
 const productId = ref(route.params.productId);
+
+const productName = ref('');
+const productDescription = ref('');
+const productCategory = ref('');
+const productOriginalPrice = ref(0);
+const productPictureUrl = ref('');
+const productEndDate = ref('');
+
+const error = ref(null);
+
+const handleSubmit = async () => {
+  try {
+    const response = await fetch('http://localhost:3000/api/products', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token.value}`
+      },
+      body: JSON.stringify({
+        name: productName.value,
+        description: productDescription.value,
+        category: productCategory.value,
+        originalPrice: productOriginalPrice.value,
+        pictureUrl: productPictureUrl.value,
+        endDate: productEndDate.value
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to add product');
+    }
+
+    const data = await response.json();
+    router.push({ name: "Home", params: { productId: data.productId } });
+  } catch (error) {
+    console.error('Error adding product:', error.message);
+    error.value = 'Une erreur s\'est produite lors de l\'ajout du produit.';
+  }
+};
 </script>
 
 <template>
