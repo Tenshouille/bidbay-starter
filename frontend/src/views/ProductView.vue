@@ -34,7 +34,6 @@ const deleteProduct = async () => {
         throw new Error('Failed to delete the product.');
       }
 
-      // Rediriger vers la page d'accueil ou une autre page après la suppression
       router.push('/');
     } catch (err) {
       console.error('Error deleting product:', err.message);
@@ -42,6 +41,41 @@ const deleteProduct = async () => {
     }
   }
 };
+
+function isAuthorizedToDelete(bid) {
+  return user.value && (user.value.id === bid.bidder.id || user.value.id === product.value.sellerId);
+}
+
+
+const deleteBid = async (bidId) => {
+  if (confirm("Êtes-vous sûr de vouloir supprimer cette offre ?")) {
+    try {
+      const response = await fetch(`http://localhost:3000/api/products/${productId.value}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token.value}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ bidId: bidId })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete the bid.');
+      }
+
+      await fetchProduct();
+    } catch (err) {
+      console.error('Error deleting bid:', err.message);
+      alert('Erreur lors de la suppression de l\'offre.');
+    }
+  }
+};
+
+
+function canDeleteBid(bid) {
+  return user.value && (user.value.id === bid.bidder.id || user.value.id === product.value.sellerId);
+}
+
 
 onMounted(async () => {
   loading.value = true;
@@ -134,13 +168,11 @@ onMounted(async () => {
               <td>{{ bid.price }} €</td>
               <td>{{ formatDate(bid.date) }}</td>
               <td>
-                <button class="btn btn-danger btn-sm">Supprimer</button>
+                <button @click="deleteBid(bid.id)" class="btn btn-danger btn-sm">Supprimer</button>
               </td>
             </tr>
           </tbody>
         </table>
-
-        <!-- La partie enchères et offres serait mise à jour de manière similaire, en récupérant les données depuis l'API -->
       </div>
     </div>
   </div>

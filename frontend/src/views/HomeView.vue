@@ -1,6 +1,5 @@
 <template>
   <div>
-    <!-- Votre code existant pour afficher la liste des produits -->
     <h1 class="text-center mb-4">Liste des produits</h1>
 
     <div class="row mb-3">
@@ -57,7 +56,6 @@
     <div class="row">
       <div class="col-md-4 mb-4" v-for="product in sortedFilteredProducts" :key="product.id">
         <div class="card">
-          <!-- Utilisation de RouterLink pour diriger l'utilisateur vers la page des détails du produit -->
           <RouterLink :to="{ name: 'Product', params: { productId: product.id } }">
             <img :src="product.pictureUrl" class="card-img-top" />
           </RouterLink>
@@ -79,7 +77,7 @@
             <p class="card-text">
               En cours jusqu'au {{ formatDate(product.endDate) }}
             </p>
-            <p class="card-text">Prix actuel : {{ product.originalPrice }} €</p>
+            <p class="card-text">Prix actuel : {{ highestBid(product) }} €</p>
           </div>
         </div>
       </div>
@@ -115,7 +113,18 @@ async function fetchProducts() {
       errorMessage.value = result.error || 'Une erreur est survenue lors du chargement des produits.';
       error.value = true;
     } else {
-      products.value = await response.json();
+      const productsData = await response.json();
+
+      for (const product of productsData) {
+        const bidsResponse = await fetch(`http://localhost:3000/api/products/${product.id}`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+        });
+        const bidsData = await bidsResponse.json();
+        product.bids = bidsData.bids;
+      }
+
+      products.value = productsData;
     }
   } catch (e) {
     console.error(e);
@@ -131,15 +140,12 @@ const formatDate = (dateString) => {
   return new Intl.DateTimeFormat('fr-FR', options).format(new Date(dateString));
 };
 
-// Méthode pour filtrer les produits par nom
 function filterProducts() {
   return products.value.filter(product => {
     return product.name.toLowerCase().includes(filterText.value.toLowerCase());
   });
 }
 
-
-// Méthode pour trier les produits par nom ou prix
 function sortProducts() {
   const sortedProducts = [...products.value];
   if (sortBy.value === 'name') {
@@ -150,7 +156,6 @@ function sortProducts() {
   return sortedProducts;
 }
 
-// Propriété calculée pour récupérer les produits filtrés et triés
 const sortedFilteredProducts = computed(() => {
   const filtered = products.value.filter(product => {
     return product.name.toLowerCase().includes(filterText.value.toLowerCase());
@@ -165,11 +170,23 @@ const sortedFilteredProducts = computed(() => {
   return filtered;
 });
 
+function highestBid(product) {
+  if (!product.bids || product.bids.length === 0) {
+    return product.originalPrice;
+  } else {
+    let maxPrice = 0;
+    for (const bid of product.bids) {
+      if (bid.price > maxPrice) {
+        maxPrice = bid.price;
+      }
+    }
+    return maxPrice;
+  }
+}
 
-// Méthode pour mettre à jour le filtre à chaque modification de l'entrée
+
 function updateFilter() {
 }
 
-// Appeler fetchProducts() au montage
 onMounted(fetchProducts);
 </script>
