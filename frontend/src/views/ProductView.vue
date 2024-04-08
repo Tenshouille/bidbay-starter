@@ -20,6 +20,29 @@ function formatDate(date) {
   }).format(new Date(date));
 }
 
+const deleteProduct = async () => {
+  if (confirm("Êtes-vous sûr de vouloir supprimer ce produit ?")) {
+    try {
+      const response = await fetch(`http://localhost:3000/api/products/${productId.value}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token.value}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete the product.');
+      }
+
+      // Rediriger vers la page d'accueil ou une autre page après la suppression
+      router.push('/');
+    } catch (err) {
+      console.error('Error deleting product:', err.message);
+      alert('Erreur lors de la suppression du produit.');
+    }
+  }
+};
+
 onMounted(async () => {
   loading.value = true;
   try {
@@ -79,7 +102,7 @@ onMounted(async () => {
       <div class="col-lg-8">
         <h1 class="mb-3">{{ product.name }}</h1>
         <RouterLink :to="{ name: 'ProductEdition', params: { productId: product.id } }" class="btn btn-primary me-2">Editer</RouterLink>
-        <button class="btn btn-danger">Supprimer</button>
+        <button @click="deleteProduct" class="btn btn-danger">Supprimer</button>
 
         <h2 class="mt-4">Description</h2>
         <p>{{ product.description }}</p>
