@@ -10,6 +10,10 @@ router.post('/api/products/:productId/bids', authMiddleware, async (req, res) =>
     const { price } = req.body;
     const bidderId = req.user.id;
 
+    if (price == null || isNaN(price) || price <= 0) {
+      return res.status(400).json({ error: "Invalid or missing fields", details: "The 'price' field is required and must be a positive number." });
+    }
+
     const product = await Product.findByPk(productId);
     if (!product) {
       return res.status(404).send('Product not found');
@@ -29,6 +33,7 @@ router.post('/api/products/:productId/bids', authMiddleware, async (req, res) =>
   }
 });
 
+
 router.delete('/api/bids/:bidId', authMiddleware, async (req, res) => {
   try {
     const { bidId } = req.params;
@@ -38,7 +43,7 @@ router.delete('/api/bids/:bidId', authMiddleware, async (req, res) => {
       return res.status(404).send('Bid not found');
     }
 
-    if (bid.bidderId !== req.user.id) {
+    if (bid.bidderId !== req.user.id && !req.user.admin) {
       return res.status(403).send('Unauthorized');
     }
 
@@ -49,5 +54,6 @@ router.delete('/api/bids/:bidId', authMiddleware, async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 });
+
 
 export default router;

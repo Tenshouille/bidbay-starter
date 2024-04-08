@@ -117,53 +117,55 @@ const createProduct = async (req, res) => {
 
   
   
-  const updateProduct = async (req, res) => {
-    try {
-      const { productId } = req.params;
-      const product = await Product.findByPk(productId);
-      if (!product) {
-        return res.status(404).send('Product not found');
-      }
-      if (product.sellerId !== req.user.id) {
-        return res.status(403).send('Forbidden - You are not the owner of this product');
-      }
-  
-      const { name, description, category, originalPrice, pictureUrl, endDate } = req.body;
-      const updatedProduct = await product.update({
-        name,
-        description,
-        category,
-        originalPrice,
-        pictureUrl,
-        endDate
-      });
-  
-      res.status(200).json(updatedProduct);
-    } catch (error) {
-      console.error('Failed to update product:', error);
-      res.status(500).send('Internal Server Error');
+const updateProduct = async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const product = await Product.findByPk(productId);
+    if (!product) {
+      return res.status(404).send('Product not found');
     }
-  };
-  
-  
-  const deleteProduct = async (req, res) => {
-    try {
-      const { productId } = req.params;
-      const product = await Product.findByPk(productId);
-      if (!product) {
-        return res.status(404).send('Product not found');
-      }
-      if (product.sellerId !== req.user.id) {
-        return res.status(403).send('Forbidden - You are not the owner of this product');
-      }
-  
-      await product.destroy();
-      res.status(204).send();
-    } catch (error) {
-      console.error('Failed to delete product:', error);
-      res.status(500).send('Internal Server Error');
+    if (product.sellerId !== req.user.id && !req.user.admin) {
+      return res.status(403).send('Forbidden - You are not the owner of this product');
     }
-  };
+
+    const { name, description, category, originalPrice, pictureUrl, endDate } = req.body;
+    const updatedProduct = await product.update({
+      name,
+      description,
+      category,
+      originalPrice,
+      pictureUrl,
+      endDate
+    });
+
+    res.status(200).json(updatedProduct);
+  } catch (error) {
+    console.error('Failed to update product:', error);
+    res.status(500).send('Internal Server Error');
+  }
+};
+
+  
+  
+const deleteProduct = async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const product = await Product.findByPk(productId);
+    if (!product) {
+      return res.status(404).send('Product not found');
+    }
+    if (product.sellerId !== req.user.id && !req.user.admin) {
+      return res.status(403).send('Forbidden - You are not the owner of this product');
+    }
+
+    await product.destroy();
+    res.status(204).send();
+  } catch (error) {
+    console.error('Failed to delete product:', error);
+    res.status(500).send('Internal Server Error');
+  }
+};
+
   
   
   export { getAllProducts, getProductById, createProduct, updateProduct, deleteProduct };
