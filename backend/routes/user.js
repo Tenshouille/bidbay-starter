@@ -6,18 +6,34 @@ const router = express.Router()
 router.get('/api/users/:userId', async (req, res) => {
   try {
     const userId = req.params.userId;
-    const user = await User.findByPk(userId);
+    const user = await User.findByPk(userId, {
+      include: [
+        {
+          model: Product,
+          as: 'products',
+        },
+        {
+          model: Bid,
+          as: 'bids',
+          include: [{
+            model: Product,
+            as: 'product',
+          }]
+        }
+      ]
+    });
 
     if (!user) {
       return res.status(404).json({ message: 'Utilisateur introuvable' });
     }
 
-    res.status(200).json(user); // Sending user info back as JSON
+    res.status(200).json(user);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Erreur serveur' });
   }
-})
+});
+
 
 router.get('/api/users/:userId/products', async (req, res) => {
   try {

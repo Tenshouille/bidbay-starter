@@ -1,0 +1,109 @@
+{
+  "stats": {
+    "suites": 1,
+    "tests": 1,
+    "passes": 0,
+    "pending": 0,
+    "failures": 1,
+    "start": "2024-04-08T09:17:44.450Z",
+    "end": "2024-04-08T09:17:44.716Z",
+    "duration": 266,
+    "testsRegistered": 1,
+    "passPercent": 0,
+    "pendingPercent": 0,
+    "other": 0,
+    "hasOther": false,
+    "skipped": 0,
+    "hasSkipped": false
+  },
+  "results": [
+    {
+      "uuid": "29d2d1cb-e4f9-4bb8-b5be-bcbee55bce4c",
+      "title": "",
+      "fullFile": "cypress\\e2e\\meta\\authors.cy.js",
+      "file": "cypress\\e2e\\meta\\authors.cy.js",
+      "beforeHooks": [],
+      "afterHooks": [],
+      "tests": [],
+      "suites": [
+        {
+          "uuid": "9162d80a-ee7a-48ab-b3db-9431aaf8c188",
+          "title": "Meta",
+          "fullFile": "",
+          "file": "",
+          "beforeHooks": [],
+          "afterHooks": [],
+          "tests": [
+            {
+              "title": "Remplisser les infos de votre groupe dans frontend/meta/authors.js",
+              "fullTitle": "Meta Remplisser les infos de votre groupe dans frontend/meta/authors.js",
+              "timedOut": null,
+              "duration": 219,
+              "state": "failed",
+              "speed": null,
+              "pass": false,
+              "fail": true,
+              "pending": false,
+              "context": null,
+              "code": "expect(_authors.authors).to.not.deep.eq([\"John Doe (p12345678)\", \"Jane Doe (p12345678)\"]);\nexpect(_authors.group).to.oneOf([1, 2, 3]);",
+              "err": {
+                "message": "AssertionError: expected 0 to be one of [ 1, 2, 3 ]",
+                "estack": "AssertionError: expected 0 to be one of [ 1, 2, 3 ]\n    at Context.eval (webpack://frontend/./cypress/e2e/meta/authors.cy.js:10:21)",
+                "diff": null
+              },
+              "uuid": "2a1cd638-aa45-4678-908e-2edf29164f08",
+              "parentUUID": "9162d80a-ee7a-48ab-b3db-9431aaf8c188",
+              "isHook": false,
+              "skipped": false
+            }
+          ],
+          "suites": [],
+          "passes": [],
+          "failures": [
+            "2a1cd638-aa45-4678-908e-2edf29164f08"
+          ],
+          "pending": [],
+          "skipped": [],
+          "duration": 219,
+          "root": false,
+          "rootEmpty": false,
+          "_timeout": 2000
+        }
+      ],
+      "passes": [],
+      "failures": [],
+      "pending": [],
+      "skipped": [],
+      "duration": 0,
+      "root": true,
+      "rootEmpty": true,
+      "_timeout": 2000
+    }
+  ],
+  "meta": {
+    "mocha": {
+      "version": "7.0.1"
+    },
+    "mochawesome": {
+      "options": {
+        "quiet": false,
+        "reportFilename": "mochawesome",
+        "saveHtml": false,
+        "saveJson": true,
+        "consoleReporter": "spec",
+        "useInlineDiffs": false,
+        "code": true
+      },
+      "version": "7.1.3"
+    },
+    "marge": {
+      "options": {
+        "reportDir": "cypress/results",
+        "overwrite": false,
+        "html": false,
+        "json": true
+      },
+      "version": "6.2.0"
+    }
+  }
+}
