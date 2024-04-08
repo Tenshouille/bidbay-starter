@@ -18,9 +18,12 @@ const productPictureUrl = ref('');
 const productEndDate = ref('');
 
 const error = ref(null);
+const isSubmitting = ref(false); // Variable to track form submission
 
 const handleSubmit = async () => {
   try {
+    isSubmitting.value = true; // Set to true when form is submitting
+    
     const response = await fetch('http://localhost:3000/api/products', {
       method: 'POST',
       headers: {
@@ -42,13 +45,14 @@ const handleSubmit = async () => {
     }
 
     const data = await response.json();
-    router.push({ name: "Home", params: { productId: data.productId } });
+    router.push({ name: "Product", params: { productId: data.productId } });
   } catch (error) {
     console.error('Error adding product:', error.message);
     error.value = 'Une erreur s\'est produite lors de l\'ajout du produit.';
+  } finally {
+    isSubmitting.value = false; // Reset to false after submission completes
   }
 };
-
 </script>
 
 <template>
@@ -154,7 +158,7 @@ const handleSubmit = async () => {
           <button
             type="submit"
             class="btn btn-primary"
-            :disabled="!productName || !productDescription || !productCategory || !productOriginalPrice || !productPictureUrl || !productEndDate"
+            :disabled="isSubmitting || !productName || !productDescription || !productCategory || !productOriginalPrice || !productPictureUrl || !productEndDate"
             data-test-submit
           >
             Ajouter le produit
