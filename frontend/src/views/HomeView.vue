@@ -54,7 +54,7 @@
     </div>
 
     <div class="row">
-      <div class="col-md-4 mb-4" v-for="product in sortedFilteredProducts" :key="product.id">
+      <div class="col-md-4 mb-4" v-for="product in sortedFilteredProducts" :key="product.id" data-test-product>
         <div class="card">
           <RouterLink :to="{ name: 'Product', params: { productId: product.id } }">
             <img :src="product.pictureUrl" class="card-img-top" />
