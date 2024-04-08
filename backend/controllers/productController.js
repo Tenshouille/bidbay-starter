@@ -30,24 +30,37 @@ const getAllProducts = async (req, res) => {
 const getProductById = async (req, res) => {
   try {
     const { productId } = req.params;
-    //const product = await Product.findByPk(productId);
     const product = await Product.findByPk(productId, {
-      include: [{
-        model: Bid,
-        as: 'bids',
-        include: [{
+      include: [
+        {
+          model: Bid,
+          as: 'bids',
+          include: [{
+            model: User,
+            as: 'bidder',
+            attributes: ['username'], 
+          }],
+        },
+        {
           model: User,
-          as: 'bidder',
-          attributes: ['username'],
-        }],
-      }],
+          as: 'seller', 
+          attributes: ['username'], 
+        }
+      ],
     });
-    if (product) {
-      res.status(200).json(product);
-    } else {
-      res.status(404).send('Product not found');
+
+    if (!product) {
+      return res.status(404).send('Product not found');
     }
+
+    const productResponse = {
+      ...product.get({ plain: true }),
+      sellerName: product.seller ? product.seller.username : undefined, 
+    };
+
+    res.status(200).json(productResponse);
   } catch (error) {
+    console.error('Failed to get product by ID:', error);
     res.status(500).send('Internal Server Error');
   }
 };

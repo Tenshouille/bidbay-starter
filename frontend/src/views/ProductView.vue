@@ -12,7 +12,6 @@ const product = ref(null);
 const loading = ref(false);
 const error = ref(null);
 
-// Fonction pour formater les dates de manière lisible
 function formatDate(date) {
   return new Intl.DateTimeFormat('fr-FR', {
     year: 'numeric', month: 'long', day: 'numeric',
@@ -21,16 +20,50 @@ function formatDate(date) {
   }).format(new Date(date));
 }
 
-// Récupération des détails du produit à partir de l'API
+const deleteProduct = async () => {
+  if (confirm("Êtes-vous sûr de vouloir supprimer ce produit ?")) {
+    try {
+      const response = await fetch(`http://localhost:3000/api/products/${productId.value}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token.value}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete the product.');
+      }
+
+      // Rediriger vers la page d'accueil ou une autre page après la suppression
+      router.push('/');
+    } catch (err) {
+      console.error('Error deleting product:', err.message);
+      alert('Erreur lors de la suppression du produit.');
+    }
+  }
+};
+
 onMounted(async () => {
   loading.value = true;
   try {
     const response = await fetch(`http://localhost:3000/api/products/${productId.value}`, {
-      headers: {
-        'Authorization': `Bearer ${token.value}`
-      }
+      headers: token.value ? { 'Authorization': `Bearer ${token.value}` } : {},
     });
-    if (!response.ok) throw new Error('Failed to fetch product details');
+
+    if (!response.ok) {
+      try {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to fetch product details');
+      } catch (jsonParseError) {
+        throw new Error(`Request failed with status ${response.status}`);
+      }
+    }
+
+    const contentType = response.headers.get('Content-Type');
+    if (!contentType || !contentType.includes('application/json')) {
+      throw new Error('Response is not JSON');
+    }
+
     product.value = await response.json();
   } catch (err) {
     error.value = err.message;
@@ -39,7 +72,9 @@ onMounted(async () => {
     loading.value = false;
   }
 });
+
 </script>
+
 
 <template>
   <div class="container mt-4">
@@ -67,7 +102,7 @@ onMounted(async () => {
       <div class="col-lg-8">
         <h1 class="mb-3">{{ product.name }}</h1>
         <RouterLink :to="{ name: 'ProductEdition', params: { productId: product.id } }" class="btn btn-primary me-2">Editer</RouterLink>
-        <button class="btn btn-danger">Supprimer</button>
+        <button @click="deleteProduct" class="btn btn-danger">Supprimer</button>
 
         <h2 class="mt-4">Description</h2>
         <p>{{ product.description }}</p>
@@ -76,12 +111,12 @@ onMounted(async () => {
         <ul>
           <li>Prix de départ : {{ product.originalPrice }} €</li>
           <li>Date de fin : {{ formatDate(product.endDate) }}</li>
-          <li>Vendeur : <RouterLink :to="{ name: 'User', params: { userId: product.sellerId } }">Nom du vendeur</RouterLink></li>
+          <li>Vendeur : <RouterLink :to="{ name: 'User', params: { userId: product.sellerId } }">{{ product.sellerName }}</RouterLink></li>
         </ul>
 
          <!-- Section d'enchères -->
          <h2 class="mt-4">Offres sur le produit</h2>
-         <table class="table table-striped">
+        <table class="table table-striped">
           <thead>
             <tr>
               <th scope="col">Enchérisseur</th>
