@@ -2,22 +2,32 @@ import { Product, User, Bid } from '../orm/index.js';
 
 const getAllProducts = async (req, res) => {
   try {
-    let products = await Product.findAll();
-
-    const productsWithSellerName = await Promise.all(products.map(async (product) => {
-      try {
-        const seller = await User.findByPk(product.sellerId, {
-          attributes: ['username']
-        });
-        if (!seller) {
-          throw new Error(`Seller with ID ${product.sellerId} not found`);
+    let products = await Product.findAll({
+      include: [
+        {
+          model: User,
+          as: 'seller',
+          attributes: ['id', 'username'], 
+        },
+        {
+          model: Bid,
+          as: 'bids', 
+          include: [{
+            model: User,
+            as: 'bidder',
+            attributes: ['id', 'username'], 
+          }]
         }
-        return { ...product.get({ plain: true }), sellerName: seller.username };
-      } catch (error) {
-        console.error('Error fetching seller for product:', product.id, error);
-        throw error;
-      }
-    }));
+      ]
+    });
+
+    const productsWithSellerName = products.map(product => {
+      const productPlain = product.get({ plain: true });
+      return {
+        ...productPlain,
+        sellerName: productPlain.seller ? productPlain.seller.username : undefined,
+      };
+    });
 
     res.status(200).json(productsWithSellerName);
   } catch (error) {
@@ -25,6 +35,7 @@ const getAllProducts = async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 };
+
 
 
 const getProductById = async (req, res) => {
@@ -38,13 +49,13 @@ const getProductById = async (req, res) => {
           include: [{
             model: User,
             as: 'bidder',
-            attributes: ['username'], 
+            attributes: ['id','username'], 
           }],
         },
         {
           model: User,
           as: 'seller', 
-          attributes: ['username'], 
+          attributes: ['id','username'], 
         }
       ],
     });
@@ -67,23 +78,43 @@ const getProductById = async (req, res) => {
 
 
 const createProduct = async (req, res) => {
-    try {
-      const { name, description, category, originalPrice, pictureUrl, endDate } = req.body;
-      const newProduct = await Product.create({
-        name,
-        description,
-        category,
-        originalPrice,
-        pictureUrl,
-        endDate,
-        sellerId: req.user.id
+  try {
+    const { name, description, category, originalPrice, pictureUrl, endDate } = req.body;
+
+    let missingFields = [];
+
+    if (!name) missingFields.push("name");
+    if (!description) missingFields.push("description");
+    if (!category) missingFields.push("category");
+    if (originalPrice === undefined) missingFields.push("originalPrice");
+    if (!pictureUrl) missingFields.push("pictureUrl");
+    if (!endDate) missingFields.push("endDate");
+
+    if (missingFields.length > 0) {
+      return res.status(400).json({
+        error: "Invalid or missing fields",
+        details: `Missing fields: ${missingFields.join(", ")}`,
       });
-      res.status(201).json(newProduct);
-    } catch (error) {
-      console.error('Failed to create product:', error);
-      res.status(400).send('Bad Request');
     }
-  };
+
+    const newProduct = await Product.create({
+      name,
+      description,
+      category,
+      originalPrice,
+      pictureUrl,
+      endDate,
+      sellerId: req.user.id
+    });
+
+    res.status(201).json(newProduct);
+  } catch (error) {
+    console.error('Failed to create product:', error);
+    res.status(500).json({ error: 'Internal Server Error', details: error.message });
+  }
+};
+
+
   
   
   const updateProduct = async (req, res) => {
