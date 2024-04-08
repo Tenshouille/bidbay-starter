@@ -45,7 +45,7 @@ onMounted(async () => {
 });
 
 const handleSubmit = async () => {
-  isSubmitting.value = true; // Début de la soumission
+  isSubmitting.value = true;
   try {
     const response = await fetch(`http://localhost:3000/api/products/${productId}`, {
       method: 'PUT',
@@ -64,16 +64,16 @@ const handleSubmit = async () => {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to update product');
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to edit product');
     }
 
-    // Traitement réussi, navigation vers une autre page ou mise à jour de l'UI
     router.push({ name: 'Product', params: { productId } });
   } catch (err) {
     console.error('Error updating product:', err);
     error.value = 'Une erreur s\'est produite lors de la modification du produit.';
   } finally {
-    isSubmitting.value = false; // Fin de la soumission, peu importe le résultat
+    isSubmitting.value = false;
   }
 };
 
@@ -122,7 +122,7 @@ const isSubmitting = ref(false);
           </div>
           
           <div class="d-grid gap-2">
-            <button type="submit" class="btn btn-primary" :disabled="isSubmitDisabled || isSubmitting" data-test-submit>Soumettre les modifications
+            <button type="submit" class="btn btn-primary" :disabled="isSubmitting" data-test-submit>Soumettre les modifications
               <span
               v-if="isSubmitting"
               data-test-spinner

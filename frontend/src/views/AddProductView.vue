@@ -16,10 +16,12 @@ const productCategory = ref('');
 const productOriginalPrice = ref(0);
 const productPictureUrl = ref('');
 const productEndDate = ref('');
-
-const error = ref(null);
+const error = ref('');
 
 const handleSubmit = async () => {
+  if (isSubmitting.value) return;
+  isSubmitting.value = true;
+  error.value = ''; // Réinitialisez l'erreur à chaque soumission
   try {
     const response = await fetch('http://localhost:3000/api/products', {
       method: 'POST',
@@ -38,16 +40,23 @@ const handleSubmit = async () => {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to add product');
+      const errorData = await response.json();
+      error.value = errorData.message || 'Failed to add product';
+    } else {
+      const data = await response.json();
+      router.push({ name: "Product", params: { productId: data.id } });
     }
-
-    const data = await response.json();
-    router.push({ name: "Home", params: { productId: data.productId } });
-  } catch (error) {
-    console.error('Error adding product:', error.message);
-    error.value = 'Une erreur s\'est produite lors de l\'ajout du produit.';
+  } catch (err) {
+    console.error('Error adding product:', err);
+    error.value = err.message || 'Une erreur s\'est produite lors de l\'ajout du produit.';
+  } finally {
+    isSubmitting.value = false;
   }
 };
+
+
+const isSubmitting = ref(false);
+
 
 </script>
 
@@ -57,9 +66,8 @@ const handleSubmit = async () => {
   <div class="row justify-content-center">
     <div class="col-md-6">
       <form @submit.prevent="handleSubmit">
-        <div v-if="error" class="alert alert-danger mt-4" role="alert" data-test-error>
-          {{ error }}
-        </div>
+        <div v-if="error" class="alert alert-danger" role="alert" data-test-error>{{ error }}</div>
+
 
         <div class="mb-3">
           <label for="product-name" class="form-label"> Nom du produit </label>
@@ -151,14 +159,9 @@ const handleSubmit = async () => {
         </div>
 
         <div class="d-grid gap-2">
-          <button
-            type="submit"
-            class="btn btn-primary"
-            :disabled="!productName || !productDescription || !productCategory || !productOriginalPrice || !productPictureUrl || !productEndDate"
-            data-test-submit
-          >
-            Ajouter le produit
+          <button type="submit" class="btn btn-primary" :disabled="isSubmitting" data-test-submit>Ajouter le produit
             <span
+              v-if="isSubmitting"
               data-test-spinner
               class="spinner-border spinner-border-sm"
               role="status"
