@@ -18,11 +18,14 @@ const productPictureUrl = ref('');
 const productEndDate = ref('');
 const error = ref('');
 
+
 const handleSubmit = async () => {
   if (isSubmitting.value) return;
   isSubmitting.value = true;
   error.value = ''; // Réinitialisez l'erreur à chaque soumission
   try {
+    isSubmitting.value = true; // Set to true when form is submitting
+    
     const response = await fetch('http://localhost:3000/api/products', {
       method: 'POST',
       headers: {
@@ -160,6 +163,7 @@ const isSubmitting = ref(false);
 
         <div class="d-grid gap-2">
           <button type="submit" class="btn btn-primary" :disabled="isSubmitting" data-test-submit>Ajouter le produit
+
             <span
               v-if="isSubmitting"
               data-test-spinner

@@ -127,6 +127,7 @@ const searchedProducts = computed(() => {
         data-test-product
         :key="product.id"
       >
+
         <div class="card">
           <RouterLink
             :to="{ name: 'Product', params: { productId: product.id } }"
