@@ -1,5 +1,5 @@
 // Noms et numéros d'étudiant
-export const authors = ["John Doe (12345678)", "Jane Doe (12345678)"];
+export const authors = ["Ediz Buba (12200044)", "Eloi Payet (12202276)", "Romain Pagneux (12202519)"];
 
 // Groupe
-export const group = 0;
+export const group = 1;
