@@ -27,11 +27,11 @@ async function fetchProducts() {
 fetchProducts();
 
 const searchedProducts = computed(() => {
-  let sortedProducts = [...products.value]; // make a copy of products to avoid modifying the original
+  let sortedProducts = [...products.value];
   if (sortOption.value === "nom") {
     sortedProducts.sort((a, b) =>
       a.name.localeCompare(b.name, "fr", { ignorePunctuation: true })
-    ); // sort by name using localeCompare to handle accents and special characters
+    );
   } else if (sortOption.value === "prix") {
     sortedProducts.sort((a, b) => {
       const aPrice =
@@ -47,11 +47,11 @@ const searchedProducts = computed(() => {
           ? b.bids[b.bids.length - 1].price
           : b.originalPrice;
       return aPrice - bPrice;
-    }); // sort by price
+    });
   }
   return sortedProducts.filter((product) =>
     product.name.toLowerCase().includes(searchQuery.value.toLowerCase())
-  ); // filter by search query
+  );
 });
 </script>
 

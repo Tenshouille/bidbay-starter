@@ -6,7 +6,7 @@ import { useAuthStore } from "../store/auth";
 const { isAuthenticated, isAdmin, userData, token } = useAuthStore();
 
 const state = reactive({
-  countdown: "", // initial value
+  countdown: "", 
   intervalId: null,
 });
 
@@ -52,14 +52,13 @@ async function updateCountdown() {
   console.log("countdown value:", state.countdown);
 }
 
-// Call updateCountdown every second
 state.intervalId = setTimeout(() => {
   updateCountdown();
   state.intervalId = setInterval(updateCountdown, 1000);
 }, 500);
 
 onUnmounted(() => {
-  clearInterval(state.intervalId); // clear interval when component is unmounted
+  clearInterval(state.intervalId);
 });
 
 const route = useRoute();
@@ -145,7 +144,6 @@ async function delBid(bidId) {
       console.error("Erreur lors de la suppression de l'enchère", error);
     });
 
-  //router.push({ name: "Product", params: { productId: productId } });
 }
 
 async function addBid() {
@@ -200,14 +198,6 @@ fetchProduct();
 </script>
   
 
-<!--<script>
-  const end_date = document.querySelector("#end_date").innerHTML;
-  let date_de_fin = end_date;
-  date_de_fin = date_de_fin.slice(14, date_de_fin.length);
-  console.log("date fin", date_de_fin);
-
-</script>-->
-
 <template>
   <div class="row">
     <div v-if="loading" class="text-center mt-4" data-test-loading>
@@ -220,7 +210,6 @@ fetchProduct();
       Une erreur est survenue lors du chargement des produits.
     </div>
     <div v-if="!loading && !error" class="row" data-test-product>
-      <!-- Colonne de gauche : image et compte à rebours -->
       <div class="col-lg-4">
         <img v-bind:src="product.pictureUrl" alt="" class="img-fluid rounded mb-3" data-test-product-picture />
         <div class="card">
@@ -235,7 +224,6 @@ fetchProduct();
         </div>
       </div>
 
-      <!-- Colonne de droite : informations du produit et formulaire d'enchère -->
       <div class="col-lg-8">
         <div class="row">
           <div class="col-lg-6">

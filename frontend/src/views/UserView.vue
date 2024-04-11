@@ -40,7 +40,6 @@ if (window.location.href.startsWith("http://localhost:5173/users/")) {
   if (window.location.href.includes("me")) {
     fetchUser("me");
   } else {
-    // Action pour l'utilisateur avec l'identifiant récupéré depuis l'URL
     const regex = /http:\/\/localhost:5173\/users\/(.+)/;
     const match = window.location.href.match(regex);
     if (match && match.length > 1) {
